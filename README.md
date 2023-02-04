@@ -1,22 +1,21 @@
 # vue3-fastapi-oath2-jwt-demo
-This is a Demo project to show how to do OAuth2 token auth with FastAPI to Vue3 frontend with JWT (with Postgres)
+This is a Demo project to show how to do OAuth2 token auth with FastAPI to Vue3 frontend with JWT forked from sdairs/vue3-fastapi-oath2-jwt-demo
 
 The project consists of:
 - A backend API built using Python & FastAPI
 - A frontend UI built using Vue.js
-- A database using CockroachDB
+- A database using MySQL with SQLAlchemy 1.4 interface
 
-It is not perfect and certainly not production ready, but should provide a starting point for understanding how the components interact.
+sadir's demo is a good starting point for understanding how the components interact.
 
 ## Backend API
 The backend is a REST API built in Python and using FastAPI.
 
 Uses: 
 - Pydantic (validation between frontend input & backend output, conversion from DB ORM models)
-- SQLAlchemy (DB abstraction, ORM models)
+- SQLAlchemy
 - python-jose is used for working with JWT
-- passlib & argon2 is used for handling password hashing
-- Poetry is used for dependency management
+- passlib is used for handling password hashing
 
 The API exposes two endpoints:
 - `GET /` returns a JSON Hello World result, protected by OAuth2
@@ -55,20 +54,11 @@ You can execute these with `yarn run start` and `yarn run build` (you must be wi
 The `yarn run start` command will launch an auto-reloading dev webserver to serve the frontend on `http://localhost:1234`.
 
 ## Database
-The database used is CockroachDB, which is a PostgreSQL compatible distributed database.
-If you aren't familiar with CockroachDB, just pretend it's Postgres.
+The database used is this fork is a simple MySQL file.
 
-One database/table exists in the database, `users.users` with 1 existing user entry.
+Running `python database/database.py` from the `backend` directory will initiate the database with a users table with the follow user;
 
 Username: `user1`
-Password: `password`
+Password: `P@ss12345`
 
-Passwords are stored as STRING representations of an Argon2 hash. 
-See [this page](https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html) for details on Argon2 hashes.
-
-# Setup
-Some example commands are provided in the `setup` directory `commands` file.
-This is not a script to be executed as is, it's just a dump of commands you might use to set your environment up.
-
-# Contributing
-Please feel free to submit PRs if you feel you can improve the demo.
+Passwords are stored as hashes.
