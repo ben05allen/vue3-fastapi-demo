@@ -19,7 +19,7 @@ def get_user(username: str) -> Dict:
     with Session.begin() as session:
         try:
             user = session.query(User).filter(User.username==username).first()
-            return {k:v for k,v in user.__dict__().items() if k != 'id'}
+            return {k:v for k,v in user.__dict__.items() if k != 'id'}
         except NoResultFound:
             return None
 

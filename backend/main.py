@@ -17,7 +17,7 @@ from database.database import get_user
 from models.token import Token, TokenData
 from models.user import User, UserInDB
 from database.database import get_user
-from util.passwords import verify_password
+from util.passwords import verify_password, hash_password
 
 
 app = FastAPI(
@@ -45,7 +45,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 def authenticate_user(username: str, password: str):
     if not (user_dict := get_user(username)):
         return False
-    if not verify_password(user_dict.get('hpwd'), password):
+    if not verify_password(password, user_dict.get('hpwd')):
         return False
     return UserInDB(**user_dict)
 
@@ -72,7 +72,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenData(access_token=token, token_type='jwt' ,username=username)
     except JWTError:
         raise credentials_exception
     user = get_user(username=token_data.username)

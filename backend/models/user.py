@@ -6,4 +6,4 @@ class User(BaseModel):
     _disabled: bool | None = None
 
 class UserInDB(User):
-    hash_password: str
+    hpwd: str
