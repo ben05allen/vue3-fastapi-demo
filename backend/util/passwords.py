@@ -1,11 +1,11 @@
-from passlib.hash import argon2
+from passlib.context import CryptContext
 
-def hash(password):
-    return argon2.hash(password)
 
-def verify(password, hash):
-    return argon2.verify(hash, password)
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
-def check(hash):
-    return argon2.check_needs_rehash(hash)
 
+def verify_password(password, hash):
+    return pwd_context.verify(password, hash)
+
+def hash_password(password):
+    return pwd_context.hash(password)

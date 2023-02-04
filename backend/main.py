@@ -1,20 +1,23 @@
+# Standard
+from typing import List, Union, Optional
+import os, sys
+from jose import JWTError, jwt
+from datetime import datetime, timedelta
+
+
 # FastAPI
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-# Standard
-from typing import List, Union, Optional
-from jose import JWTError, jwt
-from datetime import datetime, timedelta
-
 # Custom
-from db import DatabaseLayer
-from models import UserModel, Token, TokenData, UserWithHashModel
-from util.connect_with_sqlalchemy import (build_sqla_connection_string,
-                                          test_connection)
-from util.passwords import hash, verify
+from database.database import get_user
+from models.token import Token, TokenData
+from models.user import User, UserInDB
+from database.database import Session
+from util.passwords import hash_password, verify_password
+
 
 app = FastAPI(
     title="OAuth Demo",
@@ -30,28 +33,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-CONNECTION_STRING = build_sqla_connection_string("postgresql://root:root@localhost:26257/users")
-
-database = DatabaseLayer(CONNECTION_STRING)
-test_connection(database.engine)
-
 
 # Auth
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e2"
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  
+SECRET_KEY = os.environ.get("SECRET_KEY")       # openssl rand -hex 32
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
-def get_user(username: str):
-    return database.get_user(username=username)
-
-
 def authenticate_user(username: str, password: str):
-    user = get_user(username)
+    user = get_user(Session, username)
     if not user:
         return False
-    if not verify(user.password, password):
+    if not verify_password(user.hpwd, password):
         return False
     return user
 
@@ -87,7 +81,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return user
 
 
-async def get_current_active_user(current_user: UserWithHashModel = Depends(get_current_user)):
+async def get_current_active_user(current_user: UserInDB = Depends(get_current_user)):
     return current_user
 
 
@@ -112,5 +106,5 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 # Routes
 @app.get("/")
-def read_root(current_user: UserModel = Depends(get_current_active_user)):
+def read_root(current_user: User = Depends(get_current_active_user)):
     return {"result": "Hello world"}
