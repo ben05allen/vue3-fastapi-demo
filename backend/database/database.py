@@ -1,16 +1,13 @@
-from sqlalchemy import create_engine, Column, Integer, String
+# Standard imports
+from typing import Dict
+
+# SA imports
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
 
-Base = declarative_base()
-
-
-class User(Base):
-    __tablename__ = "users"
-    id = Column(Integer, primary_key=True, nullable=True)
-    username = Column(String(50), unique=True, nullable=False)
-    hpwd = Column(String(255), nullable=False)
+# Custom imports
+from models import Base, User
 
 
 engine = create_engine("sqlite:///users.db")
@@ -18,25 +15,32 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
 
-def get_user(Session, username: str) -> User:
+def get_user(username: str) -> Dict:
     with Session.begin() as session:
         try:
-            return session.query(User).filter(User.username==username).first()
+            user = session.query(User).filter(User.username==username).first()
+            return {k:v for k,v in user.__dict__().items() if k != 'id'}
         except NoResultFound:
             return None
 
 
-
 if __name__ == '__main__':
     # Create the database and add a new user 
-    from util.passwords import hash
 
+    # add the backend folder to the path
+    import os, sys
+    current_directory = os.getcwd()
+    if current_directory.endswith('database'):
+        os.chdir('..')
+        current_directory = os.getcwd()
+    sys.path.append(current_directory)
+
+    from util.passwords import hash_password
+    
     # id is automatically generated
     new_user = User(
         username = "user1", 
-        hpwd=hash('P@ss12345'))
+        hpwd = hash_password('P@ss12345'))
 
     with Session.begin() as session:       
             session.add(new_user)
-
-

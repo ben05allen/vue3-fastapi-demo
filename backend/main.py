@@ -1,22 +1,23 @@
-# Standard
+# Standard imports
 from typing import List, Union, Optional
-import os, sys
+import os
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 
 
-# FastAPI
+# FastAPI imports
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-# Custom
+
+# Custom imports
 from database.database import get_user
 from models.token import Token, TokenData
 from models.user import User, UserInDB
-from database.database import Session
-from util.passwords import hash_password, verify_password
+from database.database import get_user
+from util.passwords import verify_password
 
 
 app = FastAPI(
@@ -42,12 +43,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 def authenticate_user(username: str, password: str):
-    user = get_user(Session, username)
-    if not user:
+    if not (user_dict := get_user(username)):
         return False
-    if not verify_password(user.hpwd, password):
+    if not verify_password(user_dict.get('hpwd'), password):
         return False
-    return user
+    return UserInDB(**user_dict)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
