@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 
 # Custom imports
-from models import Base, User
+from database.models import Base, User
 
 
 engine = create_engine("sqlite:///users.db")
